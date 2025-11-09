@@ -2,7 +2,6 @@ package config
 
 import (
     "fmt"
-    "log"
     "os"
     "strconv"
 
@@ -34,28 +33,28 @@ type SecurityConfig struct {
 
 func LoadConfig() (*Config, error) {
     if err := godotenv.Load(); err != nil {
-        log.Println("No .env file found, using system environment variables")
+        return nil, fmt.Errorf("failed to load .env file: %v", err)
     }
 
     cfg := &Config{
         Database: DatabaseConfig{
-            Host:     getEnv("DB_HOST", "localhost"),
-            Port:     getEnv("DB_PORT", "5432"),
-            User:     getEnv("DB_USER", "postgres"),
-            Password: getEnv("DB_PASSWORD", ""),
-            DBName:   getEnv("DB_NAME", "payment_gateway_manjo"),
-            SSLMode:  getEnv("DB_SSLMODE", "disable"),
+            Host:     os.Getenv("DATABASE_HOST"),
+            Port:     os.Getenv("DATABASE_PORT"),
+            User:     os.Getenv("DATABASE_USER"),
+            Password: os.Getenv("DATABASE_PASSWORD"),
+            DBName:   os.Getenv("DATABASE_NAME"),
+            SSLMode:  os.Getenv("DATABASE_SSL_MODE"),
         },
         Server: ServerConfig{
-            Port: getEnv("SERVER_PORT", "8080"),
+            Port: os.Getenv("SERVER_PORT"),
         },
         Security: SecurityConfig{
-            SecretKey: getEnv("SECRET_KEY", ""),
+            SecretKey: os.Getenv("SECRET_KEY"),
         },
     }
 
     if cfg.Database.Password == "" {
-        return nil, fmt.Errorf("DB_PASSWORD is required")
+        return nil, fmt.Errorf("DATABASE_PASSWORD is required")
     }
     if cfg.Security.SecretKey == "" {
         return nil, fmt.Errorf("SECRET_KEY is required")
@@ -64,15 +63,8 @@ func LoadConfig() (*Config, error) {
         return nil, fmt.Errorf("SERVER_PORT must be numeric: %v", err)
     }
     if _, err := strconv.Atoi(cfg.Database.Port); err != nil {
-        return nil, fmt.Errorf("DB_PORT must be numeric: %v", err)
+        return nil, fmt.Errorf("DATABASE_PORT must be numeric: %v", err)
     }
 
     return cfg, nil
-}
-
-func getEnv(key, defaultValue string) string {
-    if value := os.Getenv(key); value != "" {
-        return value
-    }
-    return defaultValue
 }

@@ -18,7 +18,7 @@ func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 		cfg.Database.Host,
 		cfg.Database.Port,
 		cfg.Database.User,
-		cfg.Database.Password,
+		cfg.Database.Password,	
 		cfg.Database.DBName,
 		cfg.Database.SSLMode,
 	)
